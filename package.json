@@ -1,0 +1,24 @@
+{
+  "name": "bitbucket-eslint-bot",
+  "version": "1.0.0",
+  "description": "Bot to run on CI to post eslint errors on Bitbucket PRs",
+  "main": "index.js",
+  "bin": {
+    "eslint-bot": "cli.js"
+  },
+  "keywords": ["Bitbucket", "CI", "eslint", "bot", "jenkins"],
+  "author": "tabrindle@gmail.com",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint index.js",
+    "format": "prettier-eslint index.js --write"
+  },
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "node-fetch": "^1.7.3"
+  },
+  "devDependencies": {
+    "eslint": "^4.6.1",
+    "prettier-eslint-cli": "^4.1.1"
+  }
+}
