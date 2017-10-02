@@ -32,15 +32,14 @@ const commentTopLevelFn = function(lintResults, url, options) {
   return fetch(url, {
     method: 'POST',
     body: JSON.stringify({
-      text: `[eslint] This PR contains ${errors} lint ${errorPlural}`
+      text: `[eslint] This PR contains ${errors} lint ${errorPlural}`,
     }),
     credentials: 'include',
     headers: {
       Authorization: encodeAuthorization(options),
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   })
-    .then(console.log)
     .catch(console.log);
 };
 
@@ -55,7 +54,7 @@ const commentFileLevelFn = function(lintResults, url, options) {
             line: message.line,
             lineType: 'ADDED',
             fileType: 'TO',
-            path: file.filePath.split(process.cwd())[1]
+            path: file.filePath.split(process.cwd())[1],
           });
           return;
         }
@@ -68,16 +67,15 @@ const commentFileLevelFn = function(lintResults, url, options) {
               line: message.line,
               lineType: 'ADDED',
               fileType: 'TO',
-              path: file.filePath.split(process.cwd())[1]
-            }
+              path: file.filePath.split(process.cwd())[1],
+            },
           }),
           credentials: 'include',
           headers: {
             Authorization: encodeAuthorization(options),
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         })
-          .then(console.log)
           .catch(console.log);
       });
     }
@@ -96,7 +94,7 @@ module.exports.run = function(
     project = process.env.BITBUCKET_PROJECT,
     pullRequestID = process.env.PULL_REQUEST_ID,
     repository = process.env.BITBUCKET_REPOSITORY,
-    user = process.env.BITBUCKET_USER
+    user = process.env.BITBUCKET_USER,
   } = {}
 ) {
   if (jobName) {
@@ -116,7 +114,7 @@ module.exports.run = function(
       project,
       pullRequestID,
       repository,
-      user
+      user,
     });
 
     const lintResults = require(path.resolve(process.cwd(), lintResultsPath));
