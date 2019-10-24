@@ -11,13 +11,33 @@ Most configs can be passed as command line options/env vars
     - jobName/JOB_NAME - auto injected Jenkins job name - can extract repository + pullRequestID if setup correctly
     - password/BITBUCKET_PASSWORD - Bitbucket password for user to post comments. Be careful. 
     - project/BITBUCKET_PROJECT - Bitbucket project name eg 'APP'
-    - pullRequestID/PULL_REQUEST_ID - Numeric ID of pull request in Bitbucket
+    - pullRequestID/PULL_REQUEST_ID - Numeric ID of pull request in Bitbucket.
     - repository/BITBUCKET_REPOSITORY - Bitbucket repository name eg 'test-project'
-    - userBITBUCKET_USER - Bitbucket user to post comments eg 'tabrindle'
-
+    - user/BITBUCKET_USER - Bitbucket user to post comments eg 'tabrindle'
     - commentFileLevel - Write comments on each file at line of violation. Defaults to true.
     - commentTopLevel - Write a comment on the top level of the PR. Defaults to true
+    - warnings - write comments for warnings. Defaults to true.
+    - createTask - create a task for top level comment. Defaults to false.
     - debug - Print console statements before POSTs 
+
+## Alternative usage
+Can also be used as a js module.
+
+```
+require('bitbucket-eslint-bot').run({
+  bitbucketUrl: 'https://code.company.com',
+  pullRequestID: process.env.BRANCH_NAME,
+  commentFileLevel: false,
+  createTask: true,
+  lintResultsPath: './eslint-results.json',
+  password: process.env.GIT_PASSWORD,
+  project: 'BTBKT',
+  repository: 'client',
+  user: process.env.GIT_USERNAME,
+  warnings: false,
+});
+
+```
 
 ## Example
 

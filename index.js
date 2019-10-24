@@ -19,7 +19,7 @@ const requiredParams = (params = {}) => {
   }
 };
 
-const commentTopLevelFn = function(lintResults, url, options) {
+const commentTopLevelFn = function(lintResults, url, bitbucketUrl, options) {
   const errors = lintResults.reduce((sum, file) => sum + file.errorCount, 0);
   const errorPlural = errors === 1 ? 'error' : 'errors';
 
@@ -40,34 +40,18 @@ const commentTopLevelFn = function(lintResults, url, options) {
       'Content-Type': 'application/json',
     },
   })
-    .catch(console.log);
-};
-
-const commentFileLevelFn = function(lintResults, url, options) {
-  return lintResults.map(file => {
-    if (file.messages.length) {
-      return file.messages.map(message => {
-        if (options.debug) {
-          console.log('POST to: ', url);
-          console.log(`[eslint] ${message.message} - ([${message.ruleId}](${eslintDocsBaseUrl}/${message.ruleId}.md))`);
-          console.log({
-            line: message.line,
-            lineType: 'ADDED',
-            fileType: 'TO',
-            path: file.filePath.split(process.cwd())[1],
-          });
-          return;
-        }
-
-        fetch(url, {
+    .then(r => {
+      if (r.ok) return r.json();
+    })
+    .then(response => {
+      if(options.createTask)
+        return fetch(`${bitbucketUrl}/rest/api/1.0/tasks`, {
           method: 'POST',
           body: JSON.stringify({
-            text: `[eslint] ${message.message} - ([${message.ruleId}](${eslintDocsBaseUrl}/${message.ruleId}.md))`,
+            text: `fix ${errors} lint ${errorPlural}`,
             anchor: {
-              line: message.line,
-              lineType: 'ADDED',
-              fileType: 'TO',
-              path: file.filePath.split(process.cwd())[1],
+              id: response.id,
+              type: 'COMMENT',
             },
           }),
           credentials: 'include',
@@ -75,9 +59,57 @@ const commentFileLevelFn = function(lintResults, url, options) {
             Authorization: encodeAuthorization(options),
             'Content-Type': 'application/json',
           },
+        }).then(r => {
+          if (r.ok) return r.json();
+        });
+    })
+    .catch(console.log);
+};
+
+const commentFileLevelFn = function(lintResults, url, options) {
+  return lintResults.map(file => {
+    if (file.messages.length) {
+      return file.messages
+        .filter(message => {
+          if (!options.warnings && message.severity === 1) return false;
         })
-          .catch(console.log);
-      });
+        .map(message => {
+          if (options.debug) {
+            console.log('POST to: ', url);
+            console.log(
+              `[eslint] ${message.message} - ([${message.ruleId}](${eslintDocsBaseUrl}/${
+                message.ruleId
+              }.md))`,
+            );
+            console.log({
+              line: message.line,
+              lineType: 'ADDED',
+              fileType: 'TO',
+              path: file.filePath.split(process.cwd())[1],
+            });
+            return;
+          }
+
+          fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({
+              text: `[eslint] ${message.message} - ([${message.ruleId}](${eslintDocsBaseUrl}/${
+                message.ruleId
+              }.md))`,
+              anchor: {
+                line: message.line,
+                lineType: 'ADDED',
+                fileType: 'TO',
+                path: file.filePath.split(process.cwd())[1],
+              },
+            }),
+            credentials: 'include',
+            headers: {
+              Authorization: encodeAuthorization(options),
+              'Content-Type': 'application/json',
+            },
+          }).catch(console.log);
+        });
     }
   });
 };
@@ -87,7 +119,9 @@ module.exports.run = function(
     bitbucketUrl = process.env.BITBUCKET_URL,
     commentFileLevel = true,
     commentTopLevel = true,
+    createTask = true,
     debug = false,
+    warnings = true,
     lintResultsPath = process.env.LINT_RESULTS_PATH,
     jobName = process.env.JOB_NAME,
     password = process.env.BITBUCKET_PASSWORD,
@@ -122,10 +156,10 @@ module.exports.run = function(
 
     if (lintResults && lintResults.length) {
       if (commentTopLevel) {
-        commentTopLevelFn(lintResults, url, { debug, user, password });
+        commentTopLevelFn(lintResults, url, bitbucketUrl, { debug, user, password, createTask });
       }
       if (commentFileLevel) {
-        commentFileLevelFn(lintResults, url, { debug, user, password });
+        commentFileLevelFn(lintResults, url, { debug, user, password, warnings });
       }
     }
   } catch (err) {
