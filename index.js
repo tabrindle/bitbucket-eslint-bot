@@ -46,7 +46,11 @@ const commentTopLevelFn = function(lintResults, url, bitbucketUrl, options) {
     }
   })
     .then(r => {
-      if (r.ok) return r.json();
+      if (r.ok) {
+        return r.json();
+      } else {
+        throw { url: r.url, status: r.status, statusText: r.statusText };
+      }
     })
     .then(response => {
       if (options.createTask)
@@ -65,7 +69,11 @@ const commentTopLevelFn = function(lintResults, url, bitbucketUrl, options) {
             "Content-Type": "application/json"
           }
         }).then(r => {
-          if (r.ok) return r.json();
+          if (r.ok) {
+            return r.json();
+          } else {
+            throw { url: r.url, status: r.status, statusText: r.statusText };
+          }
         });
     })
     .catch(console.log);
