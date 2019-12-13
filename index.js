@@ -53,7 +53,7 @@ const commentTopLevelFn = function(lintResults, url, bitbucketUrl, options) {
       }
     })
     .then(response => {
-      if (options.createTask)
+      if (options.createTask && errors > 0)
         return fetch(`${bitbucketUrl}/rest/api/1.0/tasks`, {
           method: "POST",
           body: JSON.stringify({
